@@ -1,45 +1,25 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify, current_app
-from firebase_admin import auth
 import logging
-from firebase_util import google_sign_in, reset_password
 
 auth_bp = Blueprint('auth', __name__)
 logger = logging.getLogger(__name__)
 
+# In-memory user store for demo purposes
+users = {}
+
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        if request.is_json:
-            data = request.get_json()
-            email = data.get('email')
-            password = data.get('password')
-        else:
-            email = request.form.get('email')
-            password = request.form.get('password')
-
-        try:
-            # Verify with Firebase Auth
-            user = auth.get_user_by_email(email)
-            # Here you should actually verify the password with Firebase
-            # This is just a placeholder
-            session['user_id'] = user.uid
+        email = request.form.get('email')
+        password = request.form.get('password')
+        user = users.get(email)
+        if user and user['password'] == password:
+            session['user_id'] = user['id']
+            session['username'] = user['username']
             session['email'] = email
-            
-            if request.is_json:
-                return jsonify({'success': True})
             return redirect(url_for('main.home'))
-            
-        except Exception as e:
-            logger.error(f"Login error: {str(e)}")
-            if request.is_json:
-                return jsonify({
-                    'success': False, 
-                    'message': 'Invalid email or password'
-                })
-            flash('Invalid email or password')
-            
-    return render_template('auth/login.html', 
-                         firebase_config=current_app.config['FIREBASE_CONFIG'])
+        flash('Invalid email or password')
+    return render_template('auth/login.html')
 
 @auth_bp.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -47,18 +27,14 @@ def signup():
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
-        try:
-            # Create user with username as part of email
-            user = auth.create_user(
-                email=f"{username}@example.com",
-                password=password
-            )
-            session['user_id'] = user.uid
-            session['username'] = username
-            return redirect(url_for('main.home'))
-        except Exception as e:
-            logger.error(f"Signup error: {str(e)}")
-            flash('Error creating account')
+        if email in users:
+            flash('User already exists!')
+            return render_template('auth/signup.html')
+        users[email] = {'id': email, 'username': username, 'password': password}
+        session['user_id'] = email
+        session['username'] = username
+        session['email'] = email
+        return redirect(url_for('main.home'))
     return render_template('auth/signup.html')
 
 @auth_bp.route('/logout')
@@ -72,13 +48,10 @@ def google_sign_in_route():
         id_token = request.json.get('id_token')
         if not id_token:
             raise ValueError("No ID token provided")
-
         # Verify the token
         decoded_token = auth.verify_id_token(id_token)
         user_id = decoded_token['uid']
         email = decoded_token.get('email')
-
-        # Store user info in session
         session['user_id'] = user_id
         session['email'] = email
         
@@ -102,4 +75,4 @@ def reset_password_route():
             flash(f"Password reset link sent to {email}.")
         except Exception as e:
             flash(f"Error: {str(e)}")
-    return render_template('auth/reset_password.html)', firebase_config=current_app.config['FIREBASE_CONFIG'])
+    return render_template('auth/reset_password.html', firebase_config=current_app.config['FIREBASE_CONFIG'])

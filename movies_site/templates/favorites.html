@@ -1,33 +1,31 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Your Favorite Movies</h2>
-{% if is_guest %}
-    <div class="guest-message">
-        <p>Please <a href="{{ url_for('auth.login') }}">login</a> to save and view your favorites.</p>
-    </div>
-{% else %}
-    <div class="movies-container">
-        {% for movie in favorites %}
-        <div class="movie-card" onclick="window.location.href='/detail/{{ movie.media_type }}/{{ movie.item_id }}'">
+<div class="movies-container">
+    {% for movie in favorites %}
+    <div class="movie-card" onclick="window.location.href='/detail/{{ movie.media_type }}/{{ movie.item_id }}'">
+        <div class="movie-poster">
             {% if movie.poster_path %}
-            <div class="movie-poster">
-                <img src="{{ image_base }}{{ movie.poster_path }}" alt="{{ movie.title }}">
-            </div>
+            <img src="{{ image_base }}{{ movie.poster_path }}" alt="{{ movie.title }}">
             {% else %}
-            <div class="no-poster">No Image</div>
+            <div class="no-poster">No Image Available</div>
             {% endif %}
-            <div class="movie-info">
-                <h3>{{ movie.title }}</h3>
-                <div class="favorite-icon active" onclick="event.stopPropagation(); toggleFavorite(this, '{{ movie.item_id }}', '{{ movie.title | replace("'", "\\'") }}', '{{ movie.poster_path }}', '{{ movie.media_type }}')">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                    </svg>
-                </div>
+            <div class="favorite-icon active" onclick="event.stopPropagation(); toggleFavorite(this, '{{ movie.item_id }}', '{{ movie.title | replace("'", "\\'") }}', '{{ movie.poster_path }}', '{{ movie.media_type }}')">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
             </div>
         </div>
-        {% else %}
-        <p>No favorites added yet.</p>
-        {% endfor %}
+        <div class="movie-info">
+            <span class="media-type">{{ movie.media_type }}</span>
+            <h3>{{ movie.title }}</h3>
+            <div class="card-meta">
+                <!-- Removed favorite icon from here -->
+            </div>
+        </div>
     </div>
-{% endif %}
+    {% else %}
+    <p>No favorites added yet.</p>
+    {% endfor %}
+</div>
 {% endblock %}

@@ -1,9 +1,5 @@
-from firebase_admin import auth
 from functools import wraps
-from flask import session, redirect, url_for, jsonify
-import logging
-
-logger = logging.getLogger(__name__)
+from flask import session, jsonify
 
 def login_required(f):
     @wraps(f)

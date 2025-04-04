@@ -1,5 +1,4 @@
 function toggleFavorite(element, itemId, title, posterPath, mediaType) {
-    // Check if user is logged in by making a request
     fetch('/favorites/toggle_fav', {
         method: 'POST',
         headers: {
@@ -14,26 +13,23 @@ function toggleFavorite(element, itemId, title, posterPath, mediaType) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.code === 401) {
-            showToast('Please login to add favorites', 'info');
+        if (data.success) {
+            element.classList.add('active');
         } else {
-            if (data.success) {
-                element.classList.add('active');
-            } else {
-                element.classList.remove('active');
-            }
-            showToast(data.message, data.success ? 'success' : 'info');
-            
-            // If we're on the favorites page, remove the card if item was removed
-            if (window.location.pathname === '/favorites' && !data.success) {
-                const card = element.closest('.movie-card');
-                card.style.animation = 'fadeOut 0.3s';
-                setTimeout(() => card.remove(), 300);
-            }
+            element.classList.remove('active');
+        }
+        showToast(data.message, data.success ? 'success' : 'info');
+        
+        // If we're on the favorites page, remove the card if item was removed
+        if (window.location.pathname === '/favorites' && !data.success) {
+            const card = element.closest('.movie-card');
+            card.style.animation = 'fadeOut 0.3s';
+            setTimeout(() => card.remove(), 300);
         }
     })
     .catch(error => {
-        showToast('Please login to add favorites', 'info');
+        console.error('Error:', error);
+        showToast('Error updating favorites', 'error');
     });
 }
 
@@ -159,26 +155,28 @@ function createMovieCard(item) {
     const year = item.release_date ? item.release_date.split('-')[0] : 
                 item.first_air_date ? item.first_air_date.split('-')[0] : '';
     const rating = item.vote_average ? item.vote_average.toFixed(1) : '';
-    const mediaType = item.media_type ? `<span class="media-type">${item.media_type}</span>` : '';
+    const mediaType = item.media_type || 'movie';
     
     return `
-    <div class="movie-card" onclick="window.location.href='/detail/${item.media_type}/${item.id}'">
+    <div class="movie-card" onclick="window.location.href='/detail/${mediaType}/${item.id}'">
         <div class="movie-poster">
             ${item.poster_path 
                 ? `<img src="https://image.tmdb.org/t/p/w500${item.poster_path}" alt="${title}" loading="lazy">`
                 : '<div class="no-poster">No Image Available</div>'
             }
+            <div class="favorite-icon" onclick="event.stopPropagation(); toggleFavorite(this, '${item.id}', '${title.replace(/'/g, "\\'")}', '${item.poster_path}', '${mediaType}')">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
         </div>
         <div class="movie-info">
-            ${mediaType}
+            <span class="media-type">${mediaType}</span>
             <h3>${title}</h3>
             <div class="card-meta">
                 ${rating ? `<span class="rating">★ ${rating}</span>` : ''}
                 ${year ? `<span class="year">${year}</span>` : ''}
             </div>
-            <button class="favorite-btn" onclick="event.stopPropagation(); toggleFavorite(this, '${item.id}', '${title.replace(/'/g, "\\'")}', '${item.poster_path}', '${item.media_type}')">
-                <i class="heart-icon"></i> Add to Favorites
-            </button>
         </div>
     </div>
     `;

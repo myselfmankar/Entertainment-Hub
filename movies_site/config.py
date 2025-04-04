@@ -21,7 +21,6 @@ TMDB_DETAIL_URL = 'https://api.themoviedb.org/3/{type}/{id}'
 TMDB_GENRES_URL = 'https://api.themoviedb.org/3/genre/movie/list'
 TMDB_WATCH_PROVIDERS_URL = 'https://api.themoviedb.org/3/{type}/{id}/watch/providers'
 
-# Firebase Web Config
 FIREBASE_CONFIG = {
     "apiKey": os.getenv('FIREBASE_API_KEY'),
     "authDomain": os.getenv('FIREBASE_AUTH_DOMAIN'),
