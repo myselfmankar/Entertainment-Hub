@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="detail-container">
+    <div class="detail-header">
+        <div class="poster">
+            <img src="{{ image_base }}{{ item.poster_path }}" 
+                 alt="{{ item.title or item.name }}"
+                 onerror="this.src='{{ default_poster }}'">
+            <div class="favorite-icon" onclick="toggleFavorite(this, '{{ item.id }}', '{{ (item.title or item.name) | replace("'", "\\'") }}', '{{ item.poster_path }}', '{{ item.media_type }}')">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="info">
+            <h1>{{ item.title or item.name }}</h1>
+            <div class="meta">
+                <span class="year">{{ (item.release_date or item.first_air_date)[:4] }}</span>
+                <span class="rating">★ {{ "%.1f"|format(item.vote_average) }}</span>
+                <span class="runtime">{{ (item.runtime ~ " min") if item.runtime else (item.episode_run_time[0] ~ " min/ep" if item.episode_run_time else "N/A") }}</span>
+                {% if item.genres %}
+                    {% for genre in item.genres %}
+                        <span class="genre">{{ genre.name }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            <div class="additional-info">
+                {% if item.status %}<p><strong>Status:</strong> {{ item.status }}</p>{% endif %}
+                {% if item.number_of_seasons %}<p><strong>Seasons:</strong> {{ item.number_of_seasons }}</p>{% endif %}
+                {% if item.number_of_episodes %}<p><strong>Episodes:</strong> {{ item.number_of_episodes }}</p>{% endif %}
+                {% if item.production_companies %}<p><strong>Production:</strong> {{ item.production_companies[0].name }}</p>{% endif %}
+            </div>
+
+            {% if watch_providers %}
+            <div class="watch-providers">
+                <h3>Where to Watch</h3>
+                <ul>
+                    {% for provider in watch_providers %}
+                    <li>
+                        <a href="{{ provider.link }}" target="_blank" rel="noopener noreferrer">
+                            <img src="{{ provider.logo }}" alt="{{ provider.name }}" title="{{ provider.name }}">
+                            {{ provider.name }}
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <p class="overview">{{ item.overview }}</p>
+            <div class="trailer">
+                <h3>{% if item.videos.results and item.videos.results|length > 0 %}Trailer{% else %}Preview Content{% endif %}</h3>
+                <div class="video-container">
+                    {% if item.videos.results and item.videos.results|length > 0 and item.videos.results[0].key %}
+                        <iframe 
+                            src="https://www.youtube.com/embed/{{ item.videos.results[0].key }}" 
+                            frameborder="0" 
+                            allowfullscreen>
+                        </iframe>
+                    {% else %}
+                        <div class="video-error">
+                            <div class="error-icon">📹</div>
+                            <p>Sorry, no trailer available for this content.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% if item.credits.cast %}
+    <div class="cast-section">
+        <h2>Cast</h2>
+        <div class="cast-list">
+            {% for actor in item.credits.cast[:6] %}
+            <div class="cast-card">
+                {% if actor.profile_path %}
+                <img src="{{ image_base }}{{ actor.profile_path }}" alt="{{ actor.name }}">
+                {% endif %}
+                <h4>{{ actor.name }}</h4>
+                <p>{{ actor.character }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if item.similar.results %}
+    <div class="similar-section">
+        <h2>Similar Content</h2>
+        <div class="movies-container">
+            {% for similar in item.similar.results[:6] %}
+            <div class="movie-card" onclick="window.location.href='/detail/{{ similar.media_type or item.media_type }}/{{ similar.id }}'">
+                {% if similar.poster_path %}
+                <div class="movie-poster">
+                    <img src="{{ image_base }}{{ similar.poster_path }}" alt="{{ similar.title or similar.name }}">
+                </div>
+                {% else %}
+                <div class="no-poster">No Image</div>
+                {% endif %}
+                <div class="movie-info">
+                    <h3>{{ similar.title or similar.name }}</h3>
+                    {% if similar.vote_average %}
+                    <span class="rating">★ {{ "%.1f"|format(similar.vote_average) }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

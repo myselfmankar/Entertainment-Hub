@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>404 - Not Found</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="error-page">
+    <div class="error-container">
+        <h1>404</h1>
+        <h2>Content Not Found</h2>
+        <p>The movie or TV show you're looking for doesn't exist or may have been removed.</p>
+        <a href="{{ url_for('main.home') }}" class="back-home">Back to Home</a>
+    </div>
+</body>
+</html>

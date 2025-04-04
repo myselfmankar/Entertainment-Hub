@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+{% if items %}
+<h2>Search Results</h2>
+<div class="search-results">
+    {% for item in items %}
+    <div class="movie-card" onclick="window.location.href='/detail/{{ item.media_type }}/{{ item.id }}'">
+        <div class="movie-poster">
+            {% if item.poster_path %}
+            <img src="{{ image_base }}{{ item.poster_path }}" alt="{{ item.title or item.name }}" loading="lazy">
+            {% else %}
+            <div class="no-poster">No Image Available</div>
+            {% endif %}
+        </div>
+        <div class="movie-info">
+            {% if item.media_type %}
+            <span class="media-type">{{ item.media_type }}</span>
+            {% endif %}
+            <h3>{{ item.title or item.name }}</h3>
+            <div class="card-meta">
+                {% if item.vote_average %}
+                <span class="rating">★ {{ "%.1f"|format(item.vote_average) }}</span>
+                {% endif %}
+                {% if item.release_date %}
+                <span class="year">{{ item.release_date[:4] }}</span>
+                {% endif %}
+            </div>
+            <p class="overview">{{ item.overview }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+    <h2>{{ category_title }}</h2>
+    <div class="movies-container">
+        {% for item in trending_items %}
+        <div class="movie-card" onclick="window.location.href='/detail/{{ item.media_type }}/{{ item.id }}'">
+            <div class="favorite-icon" onclick="event.stopPropagation(); toggleFavorite(this, '{{ item.id }}', '{{ (item.title or item.name) | replace("'", "\\'") }}', '{{ item.poster_path }}', '{{ item.media_type }}')">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+            </div>
+            <div class="movie-poster">
+                <img src="{{ image_base }}{{ item.poster_path if item.poster_path else default_poster }}" 
+                     alt="{{ item.title or item.name }}" 
+                     loading="lazy"
+                     onerror="this.src='{{ default_poster }}'">
+            </div>
+            <div class="movie-info">
+                {% if item.media_type %}
+                <span class="media-type">{{ item.media_type }}</span>
+                {% endif %}
+                <h3>{{ item.title or item.name }}</h3>
+                <div class="card-meta">
+                    {% if item.vote_average %}
+                    <span class="rating">★ {{ "%.1f"|format(item.vote_average) }}</span>
+                    {% endif %}
+                    {% if item.release_date %}
+                    <span class="year">{{ item.release_date[:4] }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+{% endblock %}
