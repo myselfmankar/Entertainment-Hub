@@ -1,36 +1,43 @@
-# Entertainment Hub 🎬
+# Entertainment Hub - DevOps Implementation 🚀
 
-![Entertainment Hub Banner](https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1280&h=400&q=80)
+![DevOps Banner](https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=1280&h=400&q=80)
 
-A modern web application for discovering and tracking movies, TV shows, and anime. Built with Flask and powered by TMDB API.
+A DevOps-focused implementation of an entertainment discovery platform, showcasing modern observability practices with OpenTelemetry and Jaeger.
 
-## ✨ Features
-
-- 🎭 Browse trending movies, TV shows, and anime
-- 🔍 Advanced search with real-time suggestions
-- ⭐ User favorites system
-- 🌓 Dark/Light theme support
-- 📱 Responsive design for all devices
-- 🎨 Beautiful UI with smooth animations
-- 🔐 User authentication with Firebase
-- 🎥 Detailed media information and trailers
-
-## 🖼️ Screenshots
-
-<div style="display: flex; gap: 10px; margin-bottom: 20px;">
-    <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=400&h=300&q=80" alt="Home Page" width="400"/>
-    <img src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=400&h=300&q=80" alt="Movie Details" width="400"/>
+<div align="center">
+  <img src="https://opentelemetry.io/img/logos/opentelemetry-horizontal-color.png" height="100">
+  <img src="https://www.jaegertracing.io/img/jaeger-logo.png" height="100">
 </div>
+
+## 🎯 DevOps Features
+
+- 📊 Distributed Tracing with OpenTelemetry
+- 🔍 End-to-End Observability
+- 📈 Performance Monitoring
+- 🐳 Docker Containerization
+- 🌐 Microservices Architecture
+- 🔄 CI/CD Pipeline Ready
+- 🎭 Environment Configuration
+- 📝 Structured Logging
+
+## 🏗️ Technical Architecture
+
+```mermaid
+graph LR
+    A[Flask App] -->|OTLP| B[OpenTelemetry Collector]
+    B -->|Traces| C[Jaeger]
+    B -->|Metrics| D[Prometheus]
+```
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
+- Docker & Docker Compose
 - Python 3.8+
-- Firebase account
 - TMDB API key
 
-### Installation
+### Quick Start
 
 1. Clone the repository
 ```bash
@@ -38,56 +45,77 @@ git clone https://github.com/yourusername/entertainment-hub.git
 cd entertainment-hub
 ```
 
-2. Create a virtual environment
+2. Set up environment variables
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+cp .env.example .env
+# Edit .env with your TMDB_API_KEY
 ```
 
-3. Install dependencies
+3. Launch with Docker Compose
 ```bash
-pip install -r requirements.txt
+docker-compose up -d
 ```
 
-4. Set up environment variables
-```env
-TMDB_API_KEY=your_tmdb_api_key
-FIREBASE_API_KEY=your_firebase_api_key
-# Add other Firebase configuration variables
+## 🔍 Observability Stack
+
+### OpenTelemetry Integration
+
+The application uses OpenTelemetry for:
+- Automatic instrumentation of Flask routes
+- HTTP client tracing
+- Custom span attributes
+- Correlation IDs across services
+
+```python
+# Example of custom instrumentation
+@app.route('/health')
+def health_check():
+    with tracer.start_as_current_span("health_check") as span:
+        span.set_attribute("service.name", "entertainment-website")
+        return jsonify({"status": "healthy"})
 ```
 
-5. Run the application
-```bash
-python app.py
-```
+### Jaeger UI
 
-## 🛠️ Technology Stack
+Access the Jaeger UI at `http://localhost:16686` to:
+- View distributed traces
+- Analyze performance bottlenecks
+- Debug request flows
+- Generate dependency graphs
 
-- **Backend**: Flask (Python)
-- **Database**: Firebase Firestore
-- **Authentication**: Firebase Auth
-- **API**: TMDB (The Movie Database)
-- **Frontend**: HTML, CSS, JavaScript
-- **CSS Framework**: Custom CSS with Flexbox/Grid
+![Jaeger UI Screenshot](https://www.jaegertracing.io/img/traces-ss.png)
 
-## 🌟 Key Features Details
+## 🛠️ Configuration
 
-### Dynamic Content Loading
-- Infinite scroll for continuous content browsing
-- Real-time search suggestions
-- Smooth loading animations
+### OpenTelemetry Collector
 
-### User Experience
-- Responsive design for all screen sizes
-- Theme switching (Dark/Light mode)
-- Toast notifications for user actions
-- Intuitive navigation
+The collector is configured to:
+- Receive OTLP data
+- Process and batch telemetry
+- Export to Jaeger
 
-### Movie/Show Details
-- High-quality posters and backdrops
-- Cast information
-- Trailers and videos
-- Similar content recommendations
+Key configuration file: `otel-collector-config.yaml`
+
+### Docker Services
+
+- Web Application: Port 5000
+- OpenTelemetry Collector: Port 4318
+- Jaeger UI: Port 16686
+
+## 📊 Monitoring Endpoints
+
+- Health Check: `GET /health`
+- Metrics: `GET /metrics`
+- Jaeger UI: `http://localhost:16686`
+- OTEL Collector: `http://localhost:4318`
+
+## 🔄 DevOps Workflow
+
+1. Code changes trigger CI pipeline
+2. Automated tests and builds
+3. Container image creation
+4. Deployment with observability enabled
+5. Monitoring and tracing in production
 
 ## 📝 License
 
@@ -95,10 +123,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- [TMDB](https://www.themoviedb.org/) for their extensive movie database
-- [Firebase](https://firebase.google.com/) for authentication and database services
-- [Unsplash](https://unsplash.com/) for beautiful images
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+- [OpenTelemetry](https://opentelemetry.io/) for observability framework
+- [Jaeger](https://www.jaegertracing.io/) for distributed tracing
+- [TMDB](https://www.themoviedb.org/) for movie data API
