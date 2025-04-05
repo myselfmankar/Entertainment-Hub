@@ -1,0 +1,34 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 10s
+    send_batch_size: 1000
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1000
+
+exporters:
+  debug: {}  # Ensure debug exporter is defined
+  otlp:
+    endpoint: jaeger:4317  
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    logs:
+      level: debug
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug, otlp]  # Ensure only valid exporters are listed
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [debug]  # Ensure only valid exporters are listed

@@ -1,9 +1,13 @@
 from flask import Blueprint, render_template, request, jsonify
 import requests
+import logging
 from config import (
     TMDB_API_KEY, TMDB_TRENDING_URL, TMDB_IMAGE_BASE, 
     DEFAULT_POSTER, CATEGORY_NAMES, TMDB_SEARCH_URL
 )
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 main_bp = Blueprint('main', __name__, url_prefix='')  # Updated to empty prefix
 
@@ -35,6 +39,8 @@ def home():
         
     try:
         trending_res = requests.get(trending_url, params=params)
+        logging.debug(f"API Request URL: {trending_res.url}")
+        logging.debug(f"API Response Status: {trending_res.status_code}")
         if not trending_res.ok:
             raise Exception(f"API request failed with status {trending_res.status_code}")
             
@@ -45,17 +51,20 @@ def home():
             for item in trending_items:
                 item['media_type'] = 'tv'
         
+        # Render JSON only for valid AJAX requests
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'items': trending_items})
         
+        # Render the template for normal requests
         return render_template('index.html', 
-                           trending_items=trending_items,
-                           image_base=TMDB_IMAGE_BASE,
-                           current_category=category,
-                           category_title=CATEGORY_NAMES.get(category, 'Trending Entertainment'),
-                           default_poster=DEFAULT_POSTER)
+                               trending_items=trending_items,
+                               image_base=TMDB_IMAGE_BASE,
+                               current_category=category,
+                               category_title=CATEGORY_NAMES.get(category, 'Trending Entertainment'),
+                               default_poster=DEFAULT_POSTER)
     except Exception as e:
-        return jsonify({'error': 'Failed to fetch data', 'message': str(e)}), 500
+        logging.error(f"Error occurred: {str(e)}")
+        return render_template('error.html', error_message=str(e)), 500
 
 @main_bp.route('/search', methods=['GET'])
 def search():
@@ -68,19 +77,31 @@ def search():
         params = {
             'api_key': TMDB_API_KEY,
             'query': query,
-            'page': 1
+            'page': page
         }
         
         if category != 'all':
             params['type'] = category
         
         res = requests.get(TMDB_SEARCH_URL, params=params)
+        logging.debug(f"API Request URL: {res.url}")
+        logging.debug(f"API Response Status: {res.status_code}")
         if res.ok:
             data = res.json()
-            items = [item for item in data.get('results', [])[:5] 
-                    if category == 'all' or item.get('media_type') == category]
+            items = [item for item in data.get('results', []) 
+                     if category == 'all' or item.get('media_type') == category]
             
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'items': items})
-            
-    return render_template('index.html', items=items, image_base=TMDB_IMAGE_BASE)
+            # Render JSON only for valid AJAX requests
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'items': items})
+        else:
+            logging.error(f"Search API request failed with status {res.status_code}")
+    
+    # Render the template for normal requests
+    return render_template('index.html', 
+                           items=items, 
+                           trending_items=[],  # Empty for search results
+                           image_base=TMDB_IMAGE_BASE,
+                           default_poster=DEFAULT_POSTER,
+                           current_category=category,
+                           category_title="Search Results")
