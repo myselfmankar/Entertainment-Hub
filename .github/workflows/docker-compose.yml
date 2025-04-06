@@ -18,10 +18,10 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker Compose Services
-        run: docker-compose build
+        run: cd movies_sites && docker-compose build
 
       - name: Run Docker Compose Services
-        run: docker-compose up -d
+        run: cd movies_sites && docker-compose up -d
 
       - name: Wait for Services to be Ready
         run: sleep 20
